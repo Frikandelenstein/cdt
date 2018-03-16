@@ -8,7 +8,7 @@ class GitRevision:
 
 def get_file_revisions(git_directory, relative_feature_file):
     # change to git working directory and execute command there
-    output = subprocess.check_output(['git', 'log', '-p', relative_feature_file], cwd=git_directory)
+    output = subprocess.check_output(['git', 'log', '--follow', relative_feature_file], cwd=git_directory)
 
     revisions = []
 
@@ -29,10 +29,10 @@ def get_file_revisions(git_directory, relative_feature_file):
 
     return revisions
 
-def get_file_revision(git_directory, f, revision):
-    output = subprocess.check_output(['git', 'show', revision + ":" + f], cwd=git_directory)
-    return output
-
-
-
-
+def get_file_revision(git_directory, files, revision):
+    for idx, f in enumerate(files):
+        try:
+            output = subprocess.check_output(['git', 'show', revision + ":" + f], cwd=git_directory)
+            return output
+        except: # if file doesn't exist in revision, try next one :) dirty dirty dirt
+            continue

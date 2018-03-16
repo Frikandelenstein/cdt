@@ -40,7 +40,7 @@ class AndroidExtractor:
 
 class ToggleDurationExtractor:
 
-    def extract(self, platform, toggle_file, git_directory, relative_toggle_file, extractor):
+    def extract(self, platform, toggle_file, git_directory, relative_toggle_files, extractor):
 
         f = open(toggle_file, "r")
         data = f.read()
@@ -48,7 +48,7 @@ class ToggleDurationExtractor:
 
         features = extractor.extract_toggles(data)
 
-        revisions = git_util.get_file_revisions(git_directory, relative_toggle_file)
+        revisions = git_util.get_file_revisions(git_directory, relative_toggle_files[0])
 
         # iterate feature toggles
         for feature in features:
@@ -57,7 +57,7 @@ class ToggleDurationExtractor:
             # iterate revisions of file
             for revision in revisions:
                 data = git_util.get_file_revision(git_directory,
-                                           relative_toggle_file, revision.revision)
+                                           relative_toggle_files, revision.revision)
 
                 try:
                     toggles = extractor.extract_toggles(data)
@@ -70,8 +70,10 @@ class ToggleDurationExtractor:
                         if parse(revision.date).replace(tzinfo=None) < feature.introduction_date:
                             feature.introduction_date = parse(revision.date).replace(tzinfo=None)
 
-            print platform, feature.featurename, feature.introduction_date
             # break
+
+        for feature in features:
+            print platform, feature.featurename, feature.introduction_date
 
         # Post results to REST service
         for feature in features:
@@ -83,7 +85,10 @@ ToggleDurationExtractor().extract(
     "android",
     "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-android/ABN/src/main/java/com/abnamro/nl/mobile/payments/core/toggle/feature/FeatureToggleConfig.java",
     "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-android",
-    "./ABN/src/main/java/com/abnamro/nl/mobile/payments/core/toggle/feature/FeatureToggleConfig.java",
+    [
+        "./ABN/src/main/java/com/abnamro/nl/mobile/payments/core/toggle/feature/FeatureToggleConfig.java",
+        "./ABN/src/main/java/com/abnamro/nl/mobile/payments/core/toggle/feature_toggle/FeatureToggleConfig.java" # old version of the feature configuration
+    ],
     AndroidExtractor())
 
 # iOS
@@ -91,5 +96,8 @@ ToggleDurationExtractor().extract(
     "ios",
     "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios/ABN/ABN/Resources/featureToggles/FeatureToggles.json",
     "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios",
-    "./ABN/ABN/Resources/featureToggles/FeatureToggles.json",
+    [
+        "./ABN/ABN/Resources/featureToggles/FeatureToggles.json",
+        "./ABN/ABN/Resources/FeatureToggles_DEBUG.json"
+    ],
     IOSExtractor())
