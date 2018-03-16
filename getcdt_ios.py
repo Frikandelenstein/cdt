@@ -14,13 +14,10 @@ class Feature:
         self.featurename = featurename
         self.introduction_date = None
 
-class ToggleDurationExtractor:
 
-    def extract(self):
-        f = open("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios/ABN/ABN/Resources/featureToggles/FeatureToggles.json", "r")
-        data = f.read()
-        f.close()
+class IOSExtractor:
 
+    def extract_toggles(self, data):
         toggles = json.loads(data)
 
         features = []
@@ -28,15 +25,27 @@ class ToggleDurationExtractor:
         for toggle in toggles["featuresConfiguration"]:
             if toggle["active"]:
                 features.append(Feature(toggle["id"]))
+        return features
 
-        revisions = git_util.get_file_revisions("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios", "./ABN/ABN/Resources/featureToggles/FeatureToggles.json")
+
+class ToggleDurationExtractor:
+
+    def extract(self, toggle_file, git_directory, relative_toggle_file, extractor):
+
+        f = open(toggle_file, "r")
+        data = f.read()
+        f.close()
+
+        features = extractor.extract_toggles(data)
+
+        revisions = git_util.get_file_revisions(git_directory, relative_toggle_file)
 
         for feature in features:
 
             feature.introduction_date = datetime.datetime.now()
             for revision in revisions:
-                data = git_util.get_file_revision("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios",
-                                           "./ABN/ABN/Resources/featureToggles/FeatureToggles.json", revision.revision)
+                data = git_util.get_file_revision(git_directory,
+                                           relative_toggle_file, revision.revision)
 
                 try:
                     toggles = json.loads(data)
@@ -58,4 +67,8 @@ class ToggleDurationExtractor:
             break
 
 
-ToggleDurationExtractor().extract()
+ToggleDurationExtractor().extract(
+    "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios/ABN/ABN/Resources/featureToggles/FeatureToggles.json",
+    "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios",
+    "./ABN/ABN/Resources/featureToggles/FeatureToggles.json",
+    IOSExtractor())
