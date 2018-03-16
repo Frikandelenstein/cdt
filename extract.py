@@ -40,7 +40,7 @@ class AndroidExtractor:
 
 class ToggleDurationExtractor:
 
-    def extract(self, toggle_file, git_directory, relative_toggle_file, extractor):
+    def extract(self, platform, toggle_file, git_directory, relative_toggle_file, extractor):
 
         f = open(toggle_file, "r")
         data = f.read()
@@ -51,7 +51,6 @@ class ToggleDurationExtractor:
         revisions = git_util.get_file_revisions(git_directory, relative_toggle_file)
 
         for feature in features:
-
             feature.introduction_date = datetime.datetime.now()
             for revision in revisions:
                 data = git_util.get_file_revision(git_directory,
@@ -66,29 +65,27 @@ class ToggleDurationExtractor:
                     if toggle.featurename == feature.featurename:
                         if parse(revision.date).replace(tzinfo=None) < feature.introduction_date:
                             feature.introduction_date = parse(revision.date).replace(tzinfo=None)
-                            continue
 
-            print feature.featurename, feature.introduction_date
+
+            print platform, feature.featurename, feature.introduction_date
             # break
 
         # Post results to REST service
         for feature in features:
-            upload.post_entry(feature.featurename, feature.introduction_date)
+            upload.post_entry(platform, feature.featurename, feature.introduction_date)
             # break
 
 # Android
 ToggleDurationExtractor().extract(
+    "android",
     "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-android/ABN/src/main/java/com/abnamro/nl/mobile/payments/core/toggle/feature/FeatureToggleConfig.java",
     "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-android",
     "./ABN/src/main/java/com/abnamro/nl/mobile/payments/core/toggle/feature/FeatureToggleConfig.java",
     AndroidExtractor())
 
-raw_input('')
-raw_input('')
-raw_input('')
-
 # iOS
 ToggleDurationExtractor().extract(
+    "ios",
     "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios/ABN/ABN/Resources/featureToggles/FeatureToggles.json",
     "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios",
     "./ABN/ABN/Resources/featureToggles/FeatureToggles.json",
