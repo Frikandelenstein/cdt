@@ -1,48 +1,16 @@
-import json
-import subprocess
-
 import datetime
 from dateutil.parser import parse
 
-import git_util
-import upload
+from domain.extractors.androidextractor import AndroidExtractor
+from domain.extractors.iosextractor import IOSExtractor
+from util import upload, git_util
 
-
-class Feature:
-
-    def __init__(self, featurename):
-        self.featurename = featurename
-        self.introduction_date = None
-
-
-class IOSExtractor:
-
-    def extract_toggles(self, data):
-        toggles = json.loads(data)
-
-        features = []
-
-        for toggle in toggles["featuresConfiguration"]:
-            if toggle["active"]:
-                features.append(Feature(toggle["id"]))
-        return features
-
-class AndroidExtractor:
-
-    def extract_toggles(self, data):
-        features = []
-        for line in data.strip().split('\n'):
-            if "@FeatureToggleBind(" in line:
-                name = line.split("toggleName")[1].split("\"")[1].split("\"")[0].strip()
-                features.append(Feature(name))
-
-        return features
 
 class ToggleDurationExtractor:
 
-    def extract(self, platform, toggle_file, git_directory, relative_toggle_files, extractor):
+    def extract(self, platform, git_directory, relative_toggle_files, extractor):
 
-        f = open(toggle_file, "r")
+        f = open(git_directory + "/" + relative_toggle_files[0], "r")
         data = f.read()
         f.close()
 
@@ -57,7 +25,7 @@ class ToggleDurationExtractor:
             # iterate revisions of file
             for revision in revisions:
                 data = git_util.get_file_revision(git_directory,
-                                           relative_toggle_files, revision.revision)
+                                                  relative_toggle_files, revision.revision)
 
                 try:
                     toggles = extractor.extract_toggles(data)
@@ -83,21 +51,19 @@ class ToggleDurationExtractor:
 # Android
 ToggleDurationExtractor().extract(
     "android",
-    "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-android/ABN/src/main/java/com/abnamro/nl/mobile/payments/core/toggle/feature/FeatureToggleConfig.java",
     "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-android",
     [
-        "./ABN/src/main/java/com/abnamro/nl/mobile/payments/core/toggle/feature/FeatureToggleConfig.java",
-        "./ABN/src/main/java/com/abnamro/nl/mobile/payments/core/toggle/feature_toggle/FeatureToggleConfig.java" # old version of the feature configuration
+        "ABN/src/main/java/com/abnamro/nl/mobile/payments/core/toggle/feature/FeatureToggleConfig.java",
+        "ABN/src/main/java/com/abnamro/nl/mobile/payments/core/toggle/feature_toggle/FeatureToggleConfig.java" # old version of the feature configuration
     ],
     AndroidExtractor())
 
 # iOS
 ToggleDurationExtractor().extract(
     "ios",
-    "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios/ABN/ABN/Resources/featureToggles/FeatureToggles.json",
     "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios",
     [
-        "./ABN/ABN/Resources/featureToggles/FeatureToggles.json",
-        "./ABN/ABN/Resources/FeatureToggles_DEBUG.json"
+        "ABN/ABN/Resources/featureToggles/FeatureToggles.json",
+        "ABN/ABN/Resources/FeatureToggles_DEBUG.json"
     ],
     IOSExtractor())
