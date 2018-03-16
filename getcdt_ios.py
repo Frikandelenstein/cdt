@@ -48,12 +48,12 @@ class ToggleDurationExtractor:
                                            relative_toggle_file, revision.revision)
 
                 try:
-                    toggles = json.loads(data)
+                    toggles = extractor.extract_toggles(data)
                 except:
                     continue
 
-                for toggle in toggles["featuresConfiguration"]:
-                    if toggle["id"] == feature.featurename:
+                for toggle in features:
+                    if toggle.featurename == feature.featurename:
                         if parse(revision.date).replace(tzinfo=None) < feature.introduction_date:
                             feature.introduction_date = parse(revision.date).replace(tzinfo=None)
                             continue
