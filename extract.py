@@ -50,8 +50,11 @@ class ToggleDurationExtractor:
 
         revisions = git_util.get_file_revisions(git_directory, relative_toggle_file)
 
+        # iterate feature toggles
         for feature in features:
             feature.introduction_date = datetime.datetime.now()
+
+            # iterate revisions of file
             for revision in revisions:
                 data = git_util.get_file_revision(git_directory,
                                            relative_toggle_file, revision.revision)
@@ -61,11 +64,11 @@ class ToggleDurationExtractor:
                 except:
                     continue
 
+                # check if toggle was already in this revision and if the revision is older
                 for toggle in toggles:
                     if toggle.featurename == feature.featurename:
                         if parse(revision.date).replace(tzinfo=None) < feature.introduction_date:
                             feature.introduction_date = parse(revision.date).replace(tzinfo=None)
-
 
             print platform, feature.featurename, feature.introduction_date
             # break
