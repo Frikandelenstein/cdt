@@ -7,6 +7,7 @@ from dateutil.parser import parse
 import git_util
 
 
+
 class ToggleDurationExtractor:
 
     def extract(self):
@@ -25,41 +26,24 @@ class ToggleDurationExtractor:
         revisions = git_util.get_file_revisions("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios", "./ABN/ABN/Resources/featureToggles/FeatureToggles.json")
 
         for feature in features:
-            pass
 
-        for revision in revisions:
-            print revision
-            git_util.get_file_revision("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios", "./ABN/ABN/Resources/featureToggles/FeatureToggles.json", revision)
+            earliest_date = datetime.datetime.now()
+            for revision in revisions:
+                data = git_util.get_file_revision("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios",
+                                           "./ABN/ABN/Resources/featureToggles/FeatureToggles.json", revision.revision)
 
-
-        # f = open("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios/ABN/ABN/Resources/featureToggles/FeatureToggles.json", "r")
-        # data = f.read()
-        # f.close()
-        #
-        # toggles = json.loads(data)
-        #
-        # features = []
-        #
-        # for toggle in toggles["featuresConfiguration"]:
-        #     if toggle["active"]:
-        #         features.append(toggle["id"])
-        #
-        # print features
-        # for feature in features:
-        #     trace back history until the feature was introduced
+                try:
+                    toggles = json.loads(data)
+                    for toggle in toggles["featuresConfiguration"]:
+                        if toggle["id"] == feature:
+                            if parse(revision.date).replace(tzinfo=None) < earliest_date:
+                                earliest_date = parse(revision.date).replace(tzinfo=None)
+                                continue
 
 
+                except:
+                    continue
+            print earliest_date
 
-
-
-        # annotate_output = subprocess.check_output(['git', 'annotate', 'FeatureToggles.json'])
-        #
-        # for line in annotate_output.strip().split('\n'):
-        #     if "@FeatureToggleBind(" in line:
-        #         name = line.split("toggleName")[1].split("\"")[1].split("\"")[0].strip()
-        #         time_delta = datetime.datetime.now() - parse(line.split('\t')[2]).replace(tzinfo=None)
-        #         print name, time_delta.seconds
-        #
-                # TODO: Upload to rest service
 
 ToggleDurationExtractor().extract()
