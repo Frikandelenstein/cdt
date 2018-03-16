@@ -5,6 +5,8 @@ import datetime
 from dateutil.parser import parse
 
 import git_util
+import upload
+
 
 class Feature:
 
@@ -48,6 +50,12 @@ class ToggleDurationExtractor:
                             continue
 
             print feature.featurename, feature.introduction_date
+            break
+
+        for feature in features:
+            # post to rest
+            upload.post_entry(feature.featurename, feature.introduction_date)
+            break
 
 
 ToggleDurationExtractor().extract()
