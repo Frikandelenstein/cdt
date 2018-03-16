@@ -27,6 +27,16 @@ class IOSExtractor:
                 features.append(Feature(toggle["id"]))
         return features
 
+class AndroidExtractor:
+
+    def extract_toggles(self, data):
+        features = []
+        for line in data.strip().split('\n'):
+            if "@FeatureToggleBind(" in line:
+                name = line.split("toggleName")[1].split("\"")[1].split("\"")[0].strip()
+                features.append(Feature(name))
+
+        return features
 
 class ToggleDurationExtractor:
 
@@ -52,21 +62,32 @@ class ToggleDurationExtractor:
                 except:
                     continue
 
-                for toggle in features:
+                for toggle in toggles:
                     if toggle.featurename == feature.featurename:
                         if parse(revision.date).replace(tzinfo=None) < feature.introduction_date:
                             feature.introduction_date = parse(revision.date).replace(tzinfo=None)
                             continue
 
             print feature.featurename, feature.introduction_date
-            break
+            # break
 
         # Post results to REST service
         for feature in features:
             upload.post_entry(feature.featurename, feature.introduction_date)
-            break
+            # break
 
+# Android
+ToggleDurationExtractor().extract(
+    "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-android/ABN/src/main/java/com/abnamro/nl/mobile/payments/core/toggle/feature/FeatureToggleConfig.java",
+    "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-android",
+    "./ABN/src/main/java/com/abnamro/nl/mobile/payments/core/toggle/feature/FeatureToggleConfig.java",
+    AndroidExtractor())
 
+raw_input('')
+raw_input('')
+raw_input('')
+
+# iOS
 ToggleDurationExtractor().extract(
     "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios/ABN/ABN/Resources/featureToggles/FeatureToggles.json",
     "/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios",
