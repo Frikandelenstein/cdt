@@ -61,8 +61,8 @@ class ToggleDurationExtractor:
             print feature.featurename, feature.introduction_date
             break
 
+        # Post results to REST service
         for feature in features:
-            # post to rest
             upload.post_entry(feature.featurename, feature.introduction_date)
             break
 
