@@ -6,7 +6,11 @@ from dateutil.parser import parse
 
 import git_util
 
+class Feature:
 
+    def __init__(self, featurename):
+        self.featurename = featurename
+        self.introduction_date = None
 
 class ToggleDurationExtractor:
 
@@ -21,29 +25,29 @@ class ToggleDurationExtractor:
 
         for toggle in toggles["featuresConfiguration"]:
             if toggle["active"]:
-                features.append(toggle["id"])
+                features.append(Feature(toggle["id"]))
 
         revisions = git_util.get_file_revisions("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios", "./ABN/ABN/Resources/featureToggles/FeatureToggles.json")
 
         for feature in features:
 
-            earliest_date = datetime.datetime.now()
+            feature.introduction_date = datetime.datetime.now()
             for revision in revisions:
                 data = git_util.get_file_revision("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios",
                                            "./ABN/ABN/Resources/featureToggles/FeatureToggles.json", revision.revision)
 
                 try:
                     toggles = json.loads(data)
-                    for toggle in toggles["featuresConfiguration"]:
-                        if toggle["id"] == feature:
-                            if parse(revision.date).replace(tzinfo=None) < earliest_date:
-                                earliest_date = parse(revision.date).replace(tzinfo=None)
-                                continue
-
-
                 except:
                     continue
-            print earliest_date
+
+                for toggle in toggles["featuresConfiguration"]:
+                    if toggle["id"] == feature.featurename:
+                        if parse(revision.date).replace(tzinfo=None) < feature.introduction_date:
+                            feature.introduction_date = parse(revision.date).replace(tzinfo=None)
+                            continue
+
+            print feature.featurename, feature.introduction_date
 
 
 ToggleDurationExtractor().extract()
