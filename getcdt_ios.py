@@ -10,9 +10,27 @@ import git_util
 class ToggleDurationExtractor:
 
     def extract(self):
+        f = open("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios/ABN/ABN/Resources/featureToggles/FeatureToggles.json", "r")
+        data = f.read()
+        f.close()
 
+        toggles = json.loads(data)
 
-        git_util.get_file_history("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios", "./ABN/ABN/Resources/featureToggles/FeatureToggles.json")
+        features = []
+
+        for toggle in toggles["featuresConfiguration"]:
+            if toggle["active"]:
+                features.append(toggle["id"])
+
+        revisions = git_util.get_file_revisions("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios", "./ABN/ABN/Resources/featureToggles/FeatureToggles.json")
+
+        for feature in features:
+            pass
+
+        for revision in revisions:
+            print revision
+            git_util.get_file_revision("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios", "./ABN/ABN/Resources/featureToggles/FeatureToggles.json", revision)
+
 
         # f = open("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios/ABN/ABN/Resources/featureToggles/FeatureToggles.json", "r")
         # data = f.read()
