@@ -4,24 +4,29 @@ import subprocess
 import datetime
 from dateutil.parser import parse
 
+import git_util
+
 
 class ToggleDurationExtractor:
 
     def extract(self):
 
-        f = open("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios/ABN/ABN/Resources/featureToggles/FeatureToggles.json", "r")
-        data = f.read()
-        f.close()
 
-        toggles = json.loads(data)
+        git_util.get_file_history("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios", "./ABN/ABN/Resources/featureToggles/FeatureToggles.json")
 
-        features = []
-
-        for toggle in toggles["featuresConfiguration"]:
-            if toggle["active"]:
-                features.append(toggle["id"])
-
-        print features
+        # f = open("/Users/roderik.lagerweij/Documents/workspace/mobiel-bankieren-ios/ABN/ABN/Resources/featureToggles/FeatureToggles.json", "r")
+        # data = f.read()
+        # f.close()
+        #
+        # toggles = json.loads(data)
+        #
+        # features = []
+        #
+        # for toggle in toggles["featuresConfiguration"]:
+        #     if toggle["active"]:
+        #         features.append(toggle["id"])
+        #
+        # print features
         # for feature in features:
         #     trace back history until the feature was introduced
 
